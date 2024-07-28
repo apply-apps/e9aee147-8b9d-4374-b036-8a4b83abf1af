@@ -1,53 +1,71 @@
-import React, { useEffect, useState } from 'react';
-import { StyleSheet, Text, View } from 'react-native';
+// Filename: index.js
+// Combined code from all files
 
-const App = () => {
-  const fullText = 'Hi, this is Apply.\nCreating mobile apps is now as simple as typing text.\nJust input your idea and press APPLY, and our platform does the rest...';
-  const [displayedText, setDisplayedText] = useState('');
-  const [index, setIndex] = useState(0);
-  const [isPaused, setIsPaused] = useState(false);
+import React, { useState, useEffect } from 'react';
+import { SafeAreaView, StyleSheet, Text, TouchableOpacity, View, ActivityIndicator, Animated } from 'react-native';
+
+const getRandomAnswer = () => {
+  const random = Math.random();
+  if (random < 0.4) return 'Yep';
+  if (random < 0.6) return 'Nope';
+  return 'Dunno';
+};
+
+export default function App() {
+  const [answer, setAnswer] = useState('');
+  const [loading, setLoading] = useState(false);
+  const opacity = new Animated.Value(0);
 
   useEffect(() => {
-    if (isPaused) return;
+    if (answer) {
+      Animated.timing(opacity, {
+        toValue: 1,
+        duration: 1000,
+        useNativeDriver: true,
+      }).start();
+    }
+  }, [answer]);
 
-    const interval = setInterval(() => {
-      setDisplayedText((prev) => prev + fullText[index]);
-      setIndex((prev) => {
-        if (prev === fullText.length - 1) {
-          setIsPaused(true);
-          setTimeout(() => {
-            setDisplayedText('');
-            setIndex(0);
-            setIsPaused(false);
-          }, 2000);
-          return 0;
-        }
-        return prev + 1;
-      });
-    }, 100);
-
-    return () => clearInterval(interval);
-  }, [index, isPaused]);
+  const handleTap = () => {
+    setLoading(true);
+    setAnswer('');
+    
+    setTimeout(() => {
+      setAnswer(getRandomAnswer());
+      setLoading(false);
+      opacity.setValue(0);
+    }, 3000);
+  };
 
   return (
-    <View style={styles.container}>
-      <Text style={styles.text}>{displayedText}</Text>
-    </View>
+    <SafeAreaView style={styles.container}>
+      <TouchableOpacity style={styles.container} onPress={handleTap}>
+        <View style={styles.content}>
+          {loading ? (
+            <ActivityIndicator size="large" color="#ffffff" />
+          ) : (
+            <Animated.Text style={[styles.answer, { opacity }]}>{answer}</Animated.Text>
+          )}
+        </View>
+      </TouchableOpacity>
+    </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+    backgroundColor: '#000080',
     justifyContent: 'center',
-    backgroundColor: 'black',
-    padding: 20,
+    alignItems: 'center',
   },
-  text: {
-    color: 'white',
-    fontSize: 24,
-    fontFamily: 'monospace',
+  content: {
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  answer: {
+    fontSize: 32,
+    color: '#ffffff',
+    fontFamily: 'sans-serif',
   },
 });
-
-export default App;
